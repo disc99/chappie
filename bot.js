@@ -7,22 +7,6 @@ const commands = {
   'profile': ['profile'],
   'manipulate': ['manipulate']
 }
-// const usage = `
-// *${BOT_NAME}のできること*
-// \`\`\`
-// # できること
-// @${BOT_NAME} ${commands.help}
-//
-// # あいさつ
-// @${BOT_NAME} ${commands.greet}
-//
-// # ${BOT_NAME}を詳しく知る
-// @${BOT_NAME} ${commands.profile}
-//
-// # ${BOT_NAME}を操る
-// @${BOT_NAME} ${commands.manipulate}
-// \`\`\`
-// `
 
 if (!process.env.token) {
   console.log('Error: Specify token in environment');
