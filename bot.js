@@ -4,21 +4,25 @@ const BOT_NAME = 'chappie';
 const commands = {
   'help': ['help'],
   'greet': ['hello','hi'],
-  'profile': ['profile']
+  'profile': ['profile'],
+  'manipulate': ['manipulate']
 }
-const usage = `
-*${BOT_NAME}のできること*
-\`\`\`
-# できること
-@${BOT_NAME} ${commands.help}
-
-# あいさつ
-@${BOT_NAME} ${commands.greet}
-
-# ${BOT_NAME}を詳しく知る
-@${BOT_NAME} ${commands.profile}
-\`\`\`
-`
+// const usage = `
+// *${BOT_NAME}のできること*
+// \`\`\`
+// # できること
+// @${BOT_NAME} ${commands.help}
+//
+// # あいさつ
+// @${BOT_NAME} ${commands.greet}
+//
+// # ${BOT_NAME}を詳しく知る
+// @${BOT_NAME} ${commands.profile}
+//
+// # ${BOT_NAME}を操る
+// @${BOT_NAME} ${commands.manipulate}
+// \`\`\`
+// `
 
 if (!process.env.token) {
   console.log('Error: Specify token in environment');
@@ -38,15 +42,19 @@ controller.spawn({
 });
 
 controller.hears(commands.help,['direct_message','direct_mention','mention'], (bot,message) => {
-    bot.reply(message, usage);
+    const usage = [`${BOT_NAME}のできること`];
+    usage.push(`\`@${BOT_NAME} ${commands.help}\`: できること`)
+    usage.push(`\`@${BOT_NAME} ${commands.greet}\`: あいさつ`)
+    usage.push(`\`@${BOT_NAME} ${commands.profile}\`: ${BOT_NAME}を詳しく知る`)
+    usage.push(`\`@${BOT_NAME} ${commands.manipulate}\`: ${BOT_NAME}を操る:skull:`)
+    bot.reply(message, usage.join('\n'));
 });
 
 controller.hears(commands.greet,['direct_message','direct_mention','mention'], (bot,message) => {
-    bot.reply(message,"Hello.");
+    bot.reply(message,"Bow-wow!");
 });
 
 controller.hears(commands.profile,['direct_message','direct_mention','mention'], (bot,message) => {
-
     bot.startConversation(message, function(err, convo) {
         const questions = {
           'q': 'ぼくの何が知りたい？',
@@ -70,7 +78,7 @@ controller.hears(commands.profile,['direct_message','direct_mention','mention'],
             {
                 pattern: 'house',
                 callback: function(response,convo) {
-                  convo.say('ぼくの住んでいるところの情報だよ :house:');
+                  convo.say('ぼくの住んでいるところの情報だよ:house:');
                     const env = JSON.stringify(process.env, null , '\t');
                     convo.say(`\`\`\`\n${env}\n\`\`\``);
                     convo.next();
@@ -91,6 +99,43 @@ controller.hears(commands.profile,['direct_message','direct_mention','mention'],
                     convo.next();
                 }
             }
+        ]);
+    });
+});
+
+controller.hears(commands.manipulate, ['direct_message','direct_mention','mention'], (bot,message) => {
+    bot.startConversation(message, function(err, convo) {
+        convo.ask("実行するコマンドは？", function(response, convo) {
+            const code = response.text;
+            convo.ask(`実行してもいい？\n\`\`\`\n${code}\n\`\`\``, [
+                {
+                    pattern: bot.utterances.yes,
+                    callback: function(response,convo) {
+                        convo.say('実行結果は...');
+                        try {
+                            convo.say(`\`\`\`\n${eval(code)}\n\`\`\``)
+                        } catch (e) {
+                          convo.say(`\`\`\`\n${e}\n\`\`\``)
+                        }
+                        convo.next();
+                    }
+                },
+                {
+                    pattern: bot.utterances.no,
+                    callback: function(response,convo) {
+                        convo.say('おっけー');
+                        convo.next();
+                    }
+                },
+                {
+                    default: true,
+                    callback: function(response,convo) {
+                        convo.repeat();
+                        convo.next();
+                    }
+                }
             ]);
+            convo.next();
+        });
     });
 });
